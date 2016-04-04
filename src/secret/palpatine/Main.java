@@ -20,12 +20,26 @@ public class Main extends javax.swing.JFrame {
     }
     
     public void refresh() {
+        // save a list of selected players
+        int[] selected = players.getSelectedIndices();
+        List<Player> oldSelectedPlayers = new ArrayList<>(selected.length);
+        for (int i = 0; i < selected.length; i++) {
+            oldSelectedPlayers.add(playerList.get(selected[i]));
+        }
+        
         calculatePlayerSpyValues();
         Collections.sort(playerList);
         List<String> strings = getPlayerStrings();
-        int[] selected = players.getSelectedIndices();
         players.setListData(strings.toArray(new String[strings.size()]));
+        
+        
+        // restore the selected players with their new indices
+        for (int i = 0; i < oldSelectedPlayers.size(); i++) {
+            selected[i] = playerList.indexOf(oldSelectedPlayers.get(i));
+        }
         players.setSelectedIndices(selected);
+        
+        
         List<String> mStrings = new ArrayList<>();
         for (Government m : governments) {
             mStrings.add(m.getString());
