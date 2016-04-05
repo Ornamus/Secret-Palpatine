@@ -2,7 +2,7 @@ package secret.palpatine;
 
 import java.awt.Color;
 
-public class Player implements Comparable {
+public class Player implements Comparable<Player> {
     
     public final String name;
     public double facistRating = 0;
@@ -17,7 +17,9 @@ public class Player implements Comparable {
     }
     
     public Color getHighlightColor() {
-        int color = 255 - (int) Math.round(Math.abs(facistRating) * 40);
+        // prevent color from going outside range
+        int color = (int) Math.min(Math.max(255 - Math.round(Math.abs(facistRating) * 40), 0), 255);
+        
         if (facistRating < 0) 
             return new Color(color, 255, color);
         else if (facistRating > 0)
@@ -27,8 +29,7 @@ public class Player implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        Player p = (Player) o;
+    public int compareTo(Player p) {
         return (int) Math.round((facistRating - p.facistRating) * 100);
     }
 }

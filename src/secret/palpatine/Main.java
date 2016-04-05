@@ -1,9 +1,14 @@
 package secret.palpatine;
 
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
 public class Main extends javax.swing.JFrame {
@@ -20,12 +25,26 @@ public class Main extends javax.swing.JFrame {
     }
     
     public void refresh() {
+        // save a list of selected players
+        int[] selected = players.getSelectedIndices();
+        List<Player> oldSelectedPlayers = new ArrayList<>(selected.length);
+        for (int i = 0; i < selected.length; i++) {
+            oldSelectedPlayers.add(playerList.get(selected[i]));
+        }
+        
         calculatePlayerSpyValues();
         Collections.sort(playerList);
         List<String> strings = getPlayerStrings();
-        int[] selected = players.getSelectedIndices();
         players.setListData(strings.toArray(new String[strings.size()]));
+        
+        
+        // restore the selected players with their new indices
+        for (int i = 0; i < oldSelectedPlayers.size(); i++) {
+            selected[i] = playerList.indexOf(oldSelectedPlayers.get(i));
+        }
         players.setSelectedIndices(selected);
+        
+        
         List<String> mStrings = new ArrayList<>();
         for (Government m : governments) {
             mStrings.add(m.getString());
@@ -86,7 +105,13 @@ public class Main extends javax.swing.JFrame {
     public List<String> getPlayerStrings() {
         List<String> names = new ArrayList<>();
         for (Player p : playerList) {
-            names.add((p.dead ? "DEAD   " : "") + p.name + "   " + Math.abs(p.facistRating) + "   (" + p.successes + "-" + p.fails + ")" + (p.hitler ? "" : "   (Confirmed Not Hitler)"));
+            names.add(String.format("%s%s     %.2f (%d-%d) %s",
+                    p.dead ? "DEAD " : "",
+                    p.name,
+                    Math.abs(p.facistRating),
+                    p.successes,
+                    p.fails,
+                    p.hitler ? "" : "(Confirmed Not Hitler)"));
         }
         return names;
     }
@@ -151,7 +176,7 @@ public class Main extends javax.swing.JFrame {
 
         jLabel3.setText("Player Info:");
 
-        addPlayer.setText("Add Player");
+        addPlayer.setText("Add Players");
         addPlayer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addPlayerActionPerformed(evt);
@@ -267,21 +292,37 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addPlayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPlayerActionPerformed
-        String name = JOptionPane.showInputDialog(null, "Enter the player's name.");
-        if (name != null) {
+        JTextArea inputNames = new JTextArea(10, 20);
+        JPanel panel = new JPanel(new GridLayout(1, 0));
+        panel.add(new JScrollPane(inputNames));
+        
+        int result = JOptionPane.showConfirmDialog(null, panel, "Add a Player per line", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (result == JOptionPane.CANCEL_OPTION)
+            return;
+        
+        String[] names = inputNames.getText().split("\\n");
+        
+        for (String name : names) {
+            name = name.trim();
+            if (name.length() == 0) {
+                continue;
+            }
+            
             boolean taken = false;
+            
             for (Player p : playerList) {
                 if (p.name.equalsIgnoreCase(name)) {
                     taken = true;
                     break;
                 }
             }
+            
             if (!taken) {
                 playerList.add(new Player(name));
-                refresh();
-
             }
         }
+        
+        refresh();
     }//GEN-LAST:event_addPlayerActionPerformed
 
     private void addMissionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMissionActionPerformed

@@ -22,7 +22,17 @@ public class PlayerCellRenderer extends DefaultListCellRenderer {
             setForeground(Color.WHITE);
             setBackground(Color.DARK_GRAY);
         }
-        if (isSelected) setBackground(Color.LIGHT_GRAY);
+        
+        
+        if (isSelected) {
+            // get hue, saturation, brightness
+            float[] hsb = Color.RGBtoHSB(getBackground().getRed(), getBackground().getGreen(), getBackground().getBlue(), null);
+            
+            // reduce brightness
+            hsb[2] *= 0.75;
+            
+            setBackground(Color.getHSBColor(hsb[0], hsb[1], hsb[2]));
+        }
         return (this);
     }
 }
